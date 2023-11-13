@@ -296,6 +296,17 @@ func update() {
 }
 */
 
+func nvmrc() string {
+	line, err := file.ReadLines(".nvmrc")
+	if err == nil {
+		fmt.Println("\nFound .nvmrc file with version: " + line[0])
+		return line[0]
+	} else {
+		fmt.Println("Error reading .nvmrc file. ")
+		return ""
+	}
+}
+
 func getVersion(version string, cpuarch string, localInstallsOnly ...bool) (string, string, error) {
 	requestedVersion := version
 	cpuarch = strings.ToLower(cpuarch)
@@ -379,6 +390,12 @@ func install(version string, cpuarch string) {
 
 	if lastarg == "--insecure" {
 		env.verifyssl = false
+	}
+
+	if version == "" {
+		if file.Exists(".nvmrc") {
+			version = nvmrc()
+		}
 	}
 
 	if strings.HasPrefix(version, "--") {
@@ -719,6 +736,13 @@ func accessDenied(err error) bool {
 }
 
 func use(version string, cpuarch string, reload ...bool) {
+	if version == "" {
+		if file.Exists(".nvmrc") {
+			version = nvmrc()
+			cpuarch = env.arch
+		}
+	}
+
 	version, cpuarch, err := getVersion(version, cpuarch, true)
 
 	if err != nil {
