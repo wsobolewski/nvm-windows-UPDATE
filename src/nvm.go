@@ -95,8 +95,12 @@ func main() {
 
 	// Run the appropriate method
 	switch args[1] {
+	case "i":
+		fallthrough
 	case "install":
 		install(detail, procarch)
+	case "rm":
+		fallthrough
 	case "uninstall":
 		uninstall(detail)
 	case "use":
@@ -1256,7 +1260,7 @@ func help() {
 	fmt.Println("  nvm arch                     : Show if node is running in 32 or 64 bit mode.")
 	fmt.Println("  nvm current                  : Display active version.")
 	fmt.Println("  nvm debug                    : Check the NVM4W process for known problems (troubleshooter).")
-	fmt.Println("  nvm install <version> [arch] : The version can be a specific version, \"latest\" for the latest current version, or \"lts\" for the")
+	fmt.Println("  nvm install | i <version> [arch] : The version can be a specific version, \"latest\" for the latest current version, or \"lts\" for the")
 	fmt.Println("                                 most recent LTS version. Optionally specify whether to install the 32 or 64 bit version (defaults")
 	fmt.Println("                                 to system arch). Set [arch] to \"all\" to install 32 AND 64 bit versions.")
 	fmt.Println("                                 Add --insecure to the end of this command to bypass SSL validation of the remote download server.")
@@ -1267,7 +1271,7 @@ func help() {
 	fmt.Println("                                 Set [url] to \"none\" to remove the proxy.")
 	fmt.Println("  nvm node_mirror [url]        : Set the node mirror. Defaults to https://nodejs.org/dist/. Leave [url] blank to use default url.")
 	fmt.Println("  nvm npm_mirror [url]         : Set the npm mirror. Defaults to https://github.com/npm/cli/archive/. Leave [url] blank to default url.")
-	fmt.Println("  nvm uninstall <version>      : The version must be a specific version.")
+	fmt.Println("  nvm uninstall | rm <version>      : The version must be a specific version.")
 	//  fmt.Println("  nvm update                   : Automatically update nvm to the latest version.")
 	fmt.Println("  nvm use [version] [arch]     : Switch to use the specified version. Optionally use \"latest\", \"lts\", or \"newest\".")
 	fmt.Println("                                 \"newest\" is the latest installed version. Optionally specify 32/64bit architecture.")
