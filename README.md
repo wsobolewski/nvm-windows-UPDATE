@@ -1,5 +1,4 @@
-<div align="center"><h2>Notice: We have started full time work on <a href="https://github.com/coreybutler/nvm-windows/wiki/Runtime">Runtime</a>, the successor to NVM for Windows.</h2>Complete <a href="https://t.co/oGqQCM9FPx">this form</a> to provide your thoughts and sign up for progress updates</div>
-<br/><br/>
+<div align="center"><h2>Notice: Modified version of a <a href="https://github.com/coreybutler/nvm-windows">NVM for Windows</a></h2></div>
 <h1 align="center">NVM for Windows</h1>
 
 <div align="center">
