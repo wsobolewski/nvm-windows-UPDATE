@@ -1527,9 +1527,6 @@ func setup() {
 		m[res[0]] = strings.TrimSpace(strings.Join(res[1:], ":"))
 	}
 
-	if _, ok := m["root"]; ok {
-		env.root = filepath.Clean(os.Getenv("NVM_HOME")) 
-	}
 	if val, ok := m["originalpath"]; ok {
 		env.originalpath = filepath.Clean(val)
 	}

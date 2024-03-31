@@ -20,9 +20,9 @@ cd .\src
 SET GOARCH=386
 go build -o %GOBINS%\nvm.exe nvm.go
 SET GOARCH=amd64
-go build -o %GOBINS%\nvm-64.exe nvm.go
+go build -o %GOBINS%\x64\nvm.exe nvm.go
 SET GOARCH=arm64
-go build -o %GOBINS%\nvm-arm64.exe nvm.go
+go build -o %GOBINS%\arm64\nvm.exe nvm.go
 
 REM Group the file with the helper binaries
 rem move nvm.exe "%GOBIN%"
@@ -33,12 +33,11 @@ echo ----------------------------
 echo Sign the nvm executable...
 echo ----------------------------
 buildtools\signtool.exe sign /debug /tr http://timestamp.sectigo.com /td sha256 /fd sha256 /a "%GOBINS%\nvm.exe"
-buildtools\signtool.exe sign /debug /tr http://timestamp.sectigo.com /td sha256 /fd sha256 /a "%GOBINS%\nvm-64.exe"
-buildtools\signtool.exe sign /debug /tr http://timestamp.sectigo.com /td sha256 /fd sha256 /a "%GOBINS%\nvm-arm64.exe"
+buildtools\signtool.exe sign /debug /tr http://timestamp.sectigo.com /td sha256 /fd sha256 /a "%GOBINS%\x64\nvm.exe"
+buildtools\signtool.exe sign /debug /tr http://timestamp.sectigo.com /td sha256 /fd sha256 /a "%GOBINS%\arm64\nvm.exe"
 
 for /f %%i in ('"%GOBINS%\nvm.exe" version') do set AppVersion=%%i
-for /f %%i in ('"%GOBINS%\nvm-64.exe" version') do set AppVersion=%%i
-for /f %%i in ('"%GOBINS%\nvm-arm64.exe" version') do set AppVersion=%%i
+
 echo nvm.exe v%AppVersion% built.
 
 REM Create the distribution folder
@@ -56,7 +55,9 @@ REM Create the distribution directory
 mkdir "%DIST%"
 
 REM Create the "no install" zip version
-for %%a in ("%GOBIN%" "%GOBINS%") do (buildtools\zip -j -9 -r "%DIST%\nvm-noinstall.zip" "%CD%\LICENSE" %%a\* -x "%GOBIN%\nodejs.ico")
+for %%a in ("%GOBIN%") do (buildtools\zip -j -9 -r "%DIST%\nvm-noinstall.zip" "%CD%\LICENSE" "%GOBINS%\nvm.exe" %%a\* -x "%GOBIN%\nodejs.ico" )
+for %%a in ("%GOBIN%") do (buildtools\zip -j -9 -r "%DIST%\nvm-noinstall-x64.zip" "%CD%\LICENSE" "%GOBINS%\x64\nvm.exe" %%a\* -x "%GOBIN%\nodejs.ico")
+for %%a in ("%GOBIN%") do (buildtools\zip -j -9 -r "%DIST%\nvm-noinstall-arm64.zip" "%CD%\LICENSE" "%GOBINS%\arm64\nvm.exe" %%a\* -x "%GOBIN%\nodejs.ico")
 
 REM Generate update utility
 echo ----------------------------
@@ -117,8 +118,8 @@ echo ----------------------------
 echo Cleaning up...
 echo ----------------------------
 del "%GOBINS%\nvm.exe"
-del "%GOBINS%\nvm-64.exe"
-del "%GOBINS%\nvm-arm64.exe"
+del "%GOBINS%\x64\nvm.exe"
+del "%GOBINS%\arm64\nvm.exe"
 echo complete
 @REM del %GOBIN%\nvm-update.exe
 @REM del %GOBIN%\nvm-setup.exe
