@@ -71,10 +71,10 @@ func main() {
 	detail := ""
 	procarch := arch.Validate(env.arch)
 
-	if !isTerminal() {
-		alert("NVM for Windows should be run from a terminal such as CMD or PowerShell.", "Terminal Only")
-		os.Exit(0)
-	}
+	// if !isTerminal() {
+	// 	alert("NVM for Windows should be run from a terminal such as CMD or PowerShell.", "Terminal Only")
+	// 	os.Exit(0)
+	// }
 
 	// Capture any additional arguments
 	if len(args) > 2 {
@@ -190,13 +190,13 @@ func setNpmMirror(uri string) {
 	saveSettings()
 }
 
-func isTerminal() bool {
-	fileInfo, err := os.Stdout.Stat()
-	if err != nil {
-		return false
-	}
-	return (fileInfo.Mode() & os.ModeCharDevice) != 0
-}
+// func isTerminal() bool {
+// 	fileInfo, err := os.Stdout.Stat()
+// 	if err != nil {
+// 		return false
+// 	}
+// 	return (fileInfo.Mode() & os.ModeCharDevice) != 0
+// }
 
 // const (
 // 	MB_YESNOCANCEL     = 0x00000003
@@ -268,23 +268,23 @@ func isTerminal() bool {
 // 	)
 // }
 
-func alert(msg string, caption ...string) {
-	user32 := windows.NewLazySystemDLL("user32.dll")
-	mbox := user32.NewProc("MessageBoxW")
-	getForegroundWindow := user32.NewProc("GetForegroundWindow")
-	var hwnd uintptr
-	ret, _, _ := getForegroundWindow.Call()
-	if ret != 0 {
-		hwnd = ret
-	}
+// func alert(msg string, caption ...string) {
+// 	user32 := windows.NewLazySystemDLL("user32.dll")
+// 	mbox := user32.NewProc("MessageBoxW")
+// 	getForegroundWindow := user32.NewProc("GetForegroundWindow")
+// 	var hwnd uintptr
+// 	ret, _, _ := getForegroundWindow.Call()
+// 	if ret != 0 {
+// 		hwnd = ret
+// 	}
 
-	title := "Alert"
-	if len(caption) > 0 {
-		title = caption[0]
-	}
+// 	title := "Alert"
+// 	if len(caption) > 0 {
+// 		title = caption[0]
+// 	}
 
-	mbox.Call(hwnd, uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(msg))), uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(title))), uintptr(windows.MB_OK))
-}
+// 	mbox.Call(hwnd, uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(msg))), uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(title))), uintptr(windows.MB_OK))
+// }
 
 /*
 func update() {
@@ -874,7 +874,7 @@ func useArchitecture(a string) {
 		fmt.Println("This computer only supports 32-bit processing.")
 		return
 	}
-	if strings.Contains("arm64",strings.ToLower(os.Getenv("PROCESSOR_ARCHITECTURE"))) {
+	if strings.Contains("arm64", strings.ToLower(os.Getenv("PROCESSOR_ARCHITECTURE"))) {
 		fmt.Println("This computer only supports arm64-bit processing.")
 		return
 	}
