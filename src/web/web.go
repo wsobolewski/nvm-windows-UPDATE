@@ -369,14 +369,14 @@ func IsNodeArm64bitAvailable(v string) bool {
 	vers := strings.Fields(strings.Replace(v, ".", " ", -1))
 	main, _ := strconv.ParseInt(vers[0], 0, 0)
 	minor, _ := strconv.ParseInt(vers[1], 0, 0)
-	fmt.Println("main "+ strconv.FormatInt(main,10) + " minor "+strconv.FormatInt(minor,10))
+
 	if main < 19 {
 		return false
 	}
-	if main == 19 && minor < 9{
+	if main == 19 && minor < 9 {
 		return false
 	}
-	
+
 	// TODO: fixme. Assume a 64 bit version exists
 	return true
 }
@@ -391,7 +391,7 @@ func getNodeUrl(v string, vpre string, arch string, append bool) string {
 	}
 
 	//url := "http://nodejs.org/dist/v"+v+"/" + vpre + "/node.exe"
-	url := GetFullNodeUrl("v" + v + "/" + vpre + "/node.exe")
+	url := GetFullNodeUrl("v" + v + "/" + vpre + "node.exe")
 
 	if !append {
 		version, err := semver.Make(v)
