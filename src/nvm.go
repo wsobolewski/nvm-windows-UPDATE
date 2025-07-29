@@ -305,7 +305,7 @@ func nvmrc() string {
 	line, err := file.ReadLines(".nvmrc")
 	if err == nil {
 		fmt.Println("\nFound .nvmrc file with version: " + line[0])
-		return line[0]
+		return strings.TrimSpace(line[0])
 	} else {
 		fmt.Println("Error reading .nvmrc file. ")
 		return ""
