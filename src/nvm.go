@@ -626,7 +626,8 @@ func uninstall(version string) {
 		v, _ := node.GetCurrentVersion()
 		if v == version {
 			// _, err := runElevated(fmt.Sprintf(`"%s" cmd /C rmdir "%s"`, filepath.Join(env.root, "elevate.cmd"), filepath.Clean(env.symlink)))
-			_, err := elevatedRun("rmdir", filepath.Clean(env.symlink))
+			//_, err := elevatedRun("rmdir", filepath.Clean(env.symlink))
+			err := os.RemoveAll(filepath.Clean(env.symlink))
 			if err != nil {
 				fmt.Println(fmt.Sprint(err))
 				return
@@ -791,7 +792,8 @@ func use(version string, cpuarch string, reload ...bool) {
 	sym, _ := os.Lstat(env.symlink)
 	if sym != nil {
 		// _, err := runElevated(fmt.Sprintf(`"%s" cmd /C rmdir "%s"`, filepath.Join(env.root, "elevate.cmd"), filepath.Clean(env.symlink)))
-		_, err := elevatedRun("rmdir", filepath.Clean(env.symlink))
+		//_, err := elevatedRun("rmdir", filepath.Clean(env.symlink))
+		err := os.RemoveAll(filepath.Clean(env.symlink))
 		if err != nil {
 			if accessDenied(err) {
 				return
@@ -808,8 +810,11 @@ func use(version string, cpuarch string, reload ...bool) {
 	// Create new symlink
 	var ok bool
 	// ok, err = runElevated(fmt.Sprintf(`"%s" cmd /C mklink /D "%s" "%s"`, filepath.Join(env.root, "elevate.cmd"), filepath.Clean(env.symlink), filepath.Join(env.root, "v"+version)))
-	ok, err = elevatedRun("mklink", "/D", filepath.Clean(env.symlink), filepath.Join(env.root, "v"+version))
+	//ok, err = elevatedRun("mklink", "/D", filepath.Clean(env.symlink), filepath.Join(env.root, "v"+version))
+	err = os.Symlink(filepath.Join(env.root, "v"+version), filepath.Clean(env.symlink))
+	ok = true
 	if err != nil {
+		ok = false
 		if strings.Contains(err.Error(), "not have sufficient privilege") || strings.Contains(strings.ToLower(err.Error()), "access is denied") {
 			// cmd := exec.Command(filepath.Join(env.root, "elevate.cmd"), "cmd", "/C", "mklink", "/D", filepath.Clean(env.symlink), filepath.Join(env.root, "v"+version))
 			// var output bytes.Buffer
@@ -817,8 +822,8 @@ func use(version string, cpuarch string, reload ...bool) {
 			// cmd.Stdout = &output
 			// cmd.Stderr = &_stderr
 			// perr := cmd.Run()
-			ok, err = elevatedRun("mklink", "/D", filepath.Clean(env.symlink), filepath.Join(env.root, "v"+version))
-
+			//ok, err = elevatedRun("mklink", "/D", filepath.Clean(env.symlink), filepath.Join(env.root, "v"+version))
+			err = os.Symlink(filepath.Join(env.root, "v"+version), filepath.Clean(env.symlink))
 			if err != nil {
 				ok = false
 				fmt.Println(fmt.Sprint(err)) // + ": " + _stderr.String())
@@ -826,7 +831,8 @@ func use(version string, cpuarch string, reload ...bool) {
 				ok = true
 			}
 		} else if strings.Contains(err.Error(), "file already exists") {
-			ok, err = elevatedRun("rmdir", filepath.Clean(env.symlink))
+			err = os.RemoveAll(filepath.Clean(env.symlink))
+			//ok, err = elevatedRun("rmdir", filepath.Clean(env.symlink))
 			// ok, err = runElevated(fmt.Sprintf(`"%s" cmd /C rmdir "%s"`, filepath.Join(env.root, "elevate.cmd"), filepath.Clean(env.symlink)))
 			reloadable := true
 			if len(reload) > 0 {
@@ -999,10 +1005,11 @@ func enable() {
 
 func disable() {
 	// ok, err := runElevated(fmt.Sprintf(`"%s" cmd /C rmdir "%s"`, filepath.Join(env.root, "elevate.cmd"), filepath.Clean(env.symlink)))
-	ok, err := elevatedRun("rmdir", filepath.Clean(env.symlink))
-	if !ok {
-		return
-	}
+	//ok, err := elevatedRun("rmdir", filepath.Clean(env.symlink))
+	err := os.RemoveAll(filepath.Clean(env.symlink))
+	//if !ok {
+	//	return
+	//}
 	if err != nil {
 		fmt.Print(fmt.Sprint(err))
 	}
@@ -1467,8 +1474,23 @@ func runElevated(command string, forceUAC ...bool) (bool, error) {
 func saveSettings() {
 	content := "root: " + strings.Trim(encode(env.root), " \n\r") + "\r\narch: " + strings.Trim(encode(env.arch), " \n\r") + "\r\nproxy: " + strings.Trim(encode(env.proxy), " \n\r") + "\r\noriginalpath: " + strings.Trim(encode(env.originalpath), " \n\r") + "\r\noriginalversion: " + strings.Trim(encode(env.originalversion), " \n\r")
 	content = content + "\r\nnode_mirror: " + strings.Trim(encode(env.node_mirror), " \n\r") + "\r\nnpm_mirror: " + strings.Trim(encode(env.npm_mirror), " \n\r")
-	ioutil.WriteFile(env.settings, []byte(content), 0644)
-	os.Setenv("NVM_HOME", strings.Trim(encode(env.root), " \n\r"))
+	os.WriteFile(env.settings, []byte(content), 0644)
+	key, err := registry.OpenKey(registry.CURRENT_USER, "Environment", registry.SET_VALUE)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer key.Close()
+	path := os.Getenv("PATH")
+	tmpPath := strings.Replace(path, os.Getenv("NVM_HOME"), strings.Trim(env.root, " \n\r"), 1)
+	if err := key.SetStringValue("NVM_HOME", strings.Trim(encode(env.root), " \n\r")); err != nil{
+		fmt.Println(err)
+		return
+	}
+	if err := key.SetStringValue("PATH", tmpPath); err != nil{
+		fmt.Println(err)
+		return
+	}
 }
 
 func getProcessPermissions() (admin bool, elevated bool, err error) {
