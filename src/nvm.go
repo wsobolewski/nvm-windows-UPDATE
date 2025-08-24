@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	NvmVersion = "1.1.11"
+	NvmVersion = "1.1.13"
 )
 
 type Environment struct {
@@ -1389,16 +1389,16 @@ func updateRootDir(path string) {
 		return
 	}
 
-	currentRoot := env.root
-	env.root = filepath.Clean(path)
+	currentRoot := env.symlink
+	env.symlink = filepath.Clean(path)
 
 	// Copy command files
-	os.Link(filepath.Clean(currentRoot+"/elevate.cmd"), filepath.Clean(env.root+"/elevate.cmd"))
-	os.Link(filepath.Clean(currentRoot+"/elevate.vbs"), filepath.Clean(env.root+"/elevate.vbs"))
+	//os.Link(filepath.Clean(currentRoot+"/elevate.cmd"), filepath.Clean(env.root+"/elevate.cmd"))
+	//os.Link(filepath.Clean(currentRoot+"/elevate.vbs"), filepath.Clean(env.root+"/elevate.vbs"))
 
 	saveSettings()
 
-	if currentRoot != env.root {
+	if currentRoot != env.symlink {
 		fmt.Println("\nRoot has been changed from " + currentRoot + " to " + path)
 	}
 }

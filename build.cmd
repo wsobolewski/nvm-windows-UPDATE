@@ -60,18 +60,18 @@ for %%a in ("%GOBIN%") do (buildtools\zip -j -9 -r "%DIST%\nvm-noinstall-x64.zip
 for %%a in ("%GOBIN%") do (buildtools\zip -j -9 -r "%DIST%\nvm-noinstall-arm64.zip" "%CD%\LICENSE" "%GOBINS%\arm64\nvm.exe" %%a\* -x "%GOBIN%\nodejs.ico")
 
 REM Generate update utility
-echo ----------------------------
-echo Generating update utility...
-echo ----------------------------
-cd .\updater
-SET GOARCH=386
-go build -o %DIST%\nvm-update.exe nvm-update.go
-SET GOARCH=amd64
-go build -o %DIST%\nvm-update-64.exe nvm-update.go
-SET GOARCH=arm64
-go build -o %DIST%\nvm-update-arm64.exe nvm-update.go
-rem move nvm-update.exe "%DIST%"
-cd ..\
+REM echo ----------------------------
+REM echo Generating update utility...
+REM echo ----------------------------
+REM cd .\updater
+REM SET GOARCH=386
+REM go build -o %DIST%\nvm-update.exe nvm-update.go
+REM SET GOARCH=amd64
+REM go build -o %DIST%\nvm-update-64.exe nvm-update.go
+REM SET GOARCH=arm64
+REM go build -o %DIST%\nvm-update-arm64.exe nvm-update.go
+REM move nvm-update.exe "%DIST%"
+REM cd ..\
 
 REM Generate the installer (InnoSetup)
 echo ----------------------------
@@ -97,15 +97,15 @@ echo ----------------------------
 buildtools\zip -j -9 -r "%DIST%\nvm-setup.zip" "%DIST%\nvm-setup.exe"
 
 
-echo ----------------------------
-echo Bundle the updater...
-echo ----------------------------
-buildtools\zip -j -9 -r "%DIST%\nvm-update.zip" "%DIST%\nvm-update.exe" "%DIST%\nvm-update-64.exe" "%DIST%\nvm-update-arm64.exe"
+REM echo ----------------------------
+REM echo Bundle the updater...
+REM echo ----------------------------
+REM buildtools\zip -j -9 -r "%DIST%\nvm-update.zip" "%DIST%\nvm-update.exe" "%DIST%\nvm-update-64.exe" "%DIST%\nvm-update-arm64.exe"
 
-del "%DIST%\nvm-update.exe"
-del "%DIST%\nvm-update-64.exe"
-del "%DIST%\nvm-update-arm64.exe"
-del "%DIST%\nvm-setup.exe"
+REM del "%DIST%\nvm-update.exe"
+REM del "%DIST%\nvm-update-64.exe"
+REM del "%DIST%\nvm-update-arm64.exe"
+REM del "%DIST%\nvm-setup.exe"
 
 REM Generate checksums
 echo ----------------------------
