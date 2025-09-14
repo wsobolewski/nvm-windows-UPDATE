@@ -117,7 +117,11 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ env.DIST }}\${{ env.AppVersion }}\nvm-noinstall.zip
-            ${{ env.DIST }}\${{ env.AppVersion }}\nvm-noinstall-x64.zip
-            ${{ env.DIST }}\${{ env.AppVersion }}\nvm-noinstall-arm64.zip
-            ${{ env.DIST }}\${{ env.AppVersion }}\nvm-setup.zip
+            dist/${{ env.AppVersion }}/nvm-noinstall.zip
+            dist/${{ env.AppVersion }}/nvm-noinstall-x64.zip
+            dist/${{ env.AppVersion }}/nvm-noinstall-arm64.zip
+            dist/${{ env.AppVersion }}/nvm-setup.zip
+            dist/${{ env.AppVersion }}/nvm-noinstall.zip.checksum.txt
+            dist/${{ env.AppVersion }}/nvm-noinstall-x64.zip.checksum.txt
+            dist/${{ env.AppVersion }}/nvm-noinstall-arm64.zip.checksum.txt
+            dist/${{ env.AppVersion }}/nvm-setup.zip.checksum.txt
