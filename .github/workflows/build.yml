@@ -87,7 +87,7 @@ jobs:
         run: |
           $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
           buildtools\iscc.exe nvm.iss /o"$distFolder"
-        shell: cmd
+        shell: pwsh
 
       - name: Zip installer
         run: |
