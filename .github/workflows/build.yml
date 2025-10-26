@@ -1,0 +1,127 @@
+name: Build and Release NVM for Windows
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      GOBIN: ${{ github.workspace }}\bin
+      GOBINS: ${{ github.workspace }}\bins
+      DIST: ${{ github.workspace }}\dist
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Prepare build directories
+        run: |          
+          mkdir bins
+          mkdir bins\x64
+          mkdir bins\arm64
+
+      - name: Build nvm.exe (386)
+        run: |
+          cd src
+          set GOARCH=386
+          go build -o $env:GOBINS\nvm.exe nvm.go
+
+      - name: Build nvm.exe (amd64)
+        run: |
+          cd src
+          set GOARCH=amd64
+          go build -o $env:GOBINS\x64\nvm.exe nvm.go
+
+      - name: Build nvm.exe (arm64)
+        run: |
+          cd src
+          set GOARCH=arm64
+          go build -o $env:GOBINS\arm64\nvm.exe nvm.go
+
+      - name: Get nvm.exe version
+        id: get_version
+        run: |
+          $version = & "${{ env.GOBINS }}\nvm.exe" version
+          echo "AppVersion=$version" >> $env:GITHUB_ENV
+
+      - name: Set up distribution folder
+        run: |
+          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
+          if (Test-Path $distFolder) { Remove-Item -Recurse -Force $distFolder }
+          mkdir $distFolder
+
+      # Zip "no install" versions for each arch
+      - name: Zip nvm-noinstall (386)
+        run: |
+          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
+          Compress-Archive -Path LICENSE,${{ env.GOBINS }}\nvm.exe,${{ env.GOBIN }}\* -DestinationPath "$distFolder\nvm-noinstall.zip"
+        shell: pwsh
+
+      - name: Zip nvm-noinstall (amd64)
+        run: |
+          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
+          Compress-Archive -Path LICENSE,${{ env.GOBINS }}\x64\nvm.exe,${{ env.GOBIN }}\* -DestinationPath "$distFolder\nvm-noinstall-x64.zip"
+        shell: pwsh
+
+      - name: Zip nvm-noinstall (arm64)
+        run: |
+          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
+          Compress-Archive -Path LICENSE,${{ env.GOBINS }}\arm64\nvm.exe,${{ env.GOBIN }}\* -DestinationPath "$distFolder\nvm-noinstall-arm64.zip"
+        shell: pwsh
+
+      # Create installer using InnoSetup from buildtools
+      - name: Generate installer with InnoSetup
+        run: |
+          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
+          buildtools\iscc.exe nvm.iss /o"$distFolder"
+        shell: pwsh
+
+      - name: Zip installer
+        run: |
+          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
+          Compress-Archive -Path "$distFolder\nvm-setup.exe" -DestinationPath "$distFolder\nvm-setup.zip"
+        shell: pwsh
+
+      # Generate MD5 checksums for all files in dist
+      - name: Generate MD5 checksums
+        run: |
+          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
+          Get-ChildItem -Path $distFolder -File | ForEach-Object {
+            $hash = Get-FileHash $_.FullName -Algorithm MD5
+            $hash.Hash | Out-File "$($_.FullName).checksum.txt"
+          }
+        shell: pwsh
+
+      - name: Show output files
+        run: |
+          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
+          dir $distFolder
+        shell: pwsh
+
+      # Upload artifacts to the GitHub Release (only runs on release)
+      - name: Upload nvm-noinstall.zip
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/${{ env.AppVersion }}/nvm-noinstall.zip
+            dist/${{ env.AppVersion }}/nvm-noinstall-x64.zip
+            dist/${{ env.AppVersion }}/nvm-noinstall-arm64.zip
+            dist/${{ env.AppVersion }}/nvm-setup.zip
+            dist/${{ env.AppVersion }}/nvm-noinstall.zip.checksum.txt
+            dist/${{ env.AppVersion }}/nvm-noinstall-x64.zip.checksum.txt
+            dist/${{ env.AppVersion }}/nvm-noinstall-arm64.zip.checksum.txt
+            dist/${{ env.AppVersion }}/nvm-setup.zip.checksum.txt
