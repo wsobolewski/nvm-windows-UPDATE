@@ -54,9 +54,9 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 
 [Files]
 Source: "{#ProjectRoot}\bin\*"; DestDir: "{app}"; BeforeInstall: PreInstall; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "{#ProjectRoot}\bin\install.cmd {#ProjectRoot}\bin\nvm-arm64.exe {#ProjectRoot}\bin\nvm-64.exe {#ProjectRoot}\bin\nvm.exe"
-Source: "{#ProjectRoot}\bins\arm64\nvm.exe"; DestDir: "{app}"; DestName: "nvm.exe"; Check: InstallARM64; Flags: solidbreak
-Source: "{#ProjectRoot}\bins\x64\nvm.exe"; DestDir: "{app}"; DestName: "nvm.exe"; Check: InstallX64; Flags: solidbreak
-Source: "{#ProjectRoot}\bins\nvm.exe"; DestDir: "{app}"; DestName: "nvm.exe"; Check: InstallOtherArch; 
+Source: "{#ProjectRoot}\bin\nvm-arm64.exe"; DestDir: "{app}"; DestName: "nvm.exe"; Check: InstallARM64; Flags: solidbreak
+Source: "{#ProjectRoot}\bin\nvm-amd64.exe"; DestDir: "{app}"; DestName: "nvm.exe"; Check: InstallX64; Flags: solidbreak
+Source: "{#ProjectRoot}\bin\nvm-386.exe"; DestDir: "{app}"; DestName: "nvm.exe"; Check: InstallOtherArch; 
 
 [Icons]
 Name: "{group}\{#MyAppShortName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{#MyIcon}"
