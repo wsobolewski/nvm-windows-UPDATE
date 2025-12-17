@@ -302,14 +302,87 @@ func update() {
 */
 
 func nvmrc() string {
-	line, err := file.ReadLines(".nvmrc")
-	if err == nil {
-		fmt.Println("\nFound .nvmrc file with version: " + line[0])
-		return strings.TrimSpace(line[0])
-	} else {
-		fmt.Println("Error reading .nvmrc file. ")
+	data, err := os.ReadFile(".nvmrc")
+	if err != nil {
+		fmt.Println("Error reading .nvmrc file.")
 		return ""
 	}
+
+	rawLines := strings.Split(string(data), "\n")
+	var cleaned []string
+	for _, l := range rawLines {
+		if idx := strings.Index(l, "#"); idx != -1 { 
+			l = l[:idx]
+		}
+		l = strings.TrimSpace(l)
+		if l == "" {
+			continue
+		}
+		cleaned = append(cleaned, l)
+	}
+
+	if len(cleaned) == 0 {
+		fmt.Println("Error: .nvmrc file is empty or contains only comments.")
+		return ""
+	}
+
+	var unpaired string          
+	keys := make(map[string]bool) 
+
+	for _, line := range cleaned {
+		if strings.Contains(line, "=") { 
+			parts := strings.SplitN(line, "=", 2)
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+
+			// Reserved key check
+			if key == "node" {
+				nvmrcInvalidMsg(cleaned)
+				return ""
+			}
+			// Duplicate key check
+			if keys[key] {
+				nvmrcInvalidMsg(cleaned)
+				return ""
+			}
+			keys[key] = true
+
+			_ = value 
+		} else { 
+			if unpaired != "" { 
+				nvmrcInvalidMsg(cleaned)
+				return ""
+			}
+			if(strings.Contains(line, "/")){
+				part := strings.Split(line, "/")[1]
+				unpaired = part
+			}else{
+				unpaired = line
+			}
+			
+		}
+	}
+
+	if unpaired == "" { // no bare version found
+		nvmrcInvalidMsg(cleaned)
+		return ""
+	}
+
+	fmt.Println("\nFound .nvmrc file with version:", unpaired)
+	return unpaired
+}
+
+// nvmrcInvalidMsg prints a detailed error message explaining why the .nvmrc file is invalid.
+func nvmrcInvalidMsg(lines []string) {
+	errorText := `invalid .nvmrc!
+all non-commented content (anything after # is a comment) must be either:
+  - a single bare nvm-recognized version-ish
+  - or, multiple distinct key-value pairs, each key/value separated by a single equals sign (=)
+
+additionally, a single bare nvm-recognized version-ish must be present (after stripping comments).`
+	warnText := fmt.Sprintf("non-commented content parsed:\n%s", strings.Join(lines, "\n"))
+	fmt.Println(errorText)
+	fmt.Println(warnText)
 }
 
 func getVersion(version string, cpuarch string, localInstallsOnly ...bool) (string, string, error) {
