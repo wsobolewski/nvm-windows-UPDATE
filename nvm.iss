@@ -1,9 +1,9 @@
 #define MyAppName "NVM for Windows"
 #define MyAppShortName "nvm"
 #define MyAppLCShortName "nvm"
-#define MyAppVersion "1.1.13"
+#define MyAppVersion "1.1.14"
 #define MyAppPublisher "Ecor Ventures LLC"
-#define MyAppURL "https://github.com/coreybutler/nvm-windows"
+#define MyAppURL "https://github.com/wsobolewski/nvm-windows"
 #define MyAppExeName "nvm.exe"
 #define MyIcon "bin\nodejs.ico"
 #define MyAppId "40078385-F676-4C61-9A9C-F9028599D6D3"
@@ -53,7 +53,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "{#ProjectRoot}\bin\*"; DestDir: "{app}"; BeforeInstall: PreInstall; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "{#ProjectRoot}\bin\install.cmd {#ProjectRoot}\bin\nvm-arm64.exe {#ProjectRoot}\bin\nvm-64.exe {#ProjectRoot}\bin\nvm.exe"
+Source: "{#ProjectRoot}\bin\nodejs.ico"; DestDir: "{app}"; BeforeInstall: PreInstall; Flags: ignoreversion recursesubdirs createallsubdirs; 
 Source: "{#ProjectRoot}\bin\nvm-arm64.exe"; DestDir: "{app}"; DestName: "nvm.exe"; Check: InstallARM64; Flags: solidbreak
 Source: "{#ProjectRoot}\bin\nvm-amd64.exe"; DestDir: "{app}"; DestName: "nvm.exe"; Check: InstallX64; Flags: solidbreak
 Source: "{#ProjectRoot}\bin\nvm-386.exe"; DestDir: "{app}"; DestName: "nvm.exe"; Check: InstallOtherArch; 
