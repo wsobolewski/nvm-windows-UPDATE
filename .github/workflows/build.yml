@@ -15,7 +15,6 @@ jobs:
 
     env:
       GOBIN: ${{ github.workspace }}\bin
-      GOBINS: ${{ github.workspace }}\bins
       DIST: ${{ github.workspace }}\dist
 
     steps:
@@ -27,34 +26,28 @@ jobs:
         with:
           go-version: '1.22'
 
-      - name: Prepare build directories
-        run: |          
-          mkdir bins
-          mkdir bins\x64
-          mkdir bins\arm64
-
       - name: Build nvm.exe (386)
         run: |
           cd src
           set GOARCH=386
-          go build -o $env:GOBINS\nvm.exe nvm.go
+          go build -o $env:GOBIN\nvm-386.exe nvm.go
 
       - name: Build nvm.exe (amd64)
         run: |
           cd src
           set GOARCH=amd64
-          go build -o $env:GOBINS\x64\nvm.exe nvm.go
+          go build -o $env:GOBIN\nvm-amd64.exe nvm.go
 
       - name: Build nvm.exe (arm64)
         run: |
           cd src
           set GOARCH=arm64
-          go build -o $env:GOBINS\arm64\nvm.exe nvm.go
+          go build -o $env:GOBIN\nvm-arm64.exe nvm.go
 
       - name: Get nvm.exe version
         id: get_version
         run: |
-          $version = & "${{ env.GOBINS }}\nvm.exe" version
+          $version = & "${{ env.GOBIN }}\nvm-386.exe" version
           echo "AppVersion=$version" >> $env:GITHUB_ENV
 
       - name: Set up distribution folder
@@ -63,23 +56,11 @@ jobs:
           if (Test-Path $distFolder) { Remove-Item -Recurse -Force $distFolder }
           mkdir $distFolder
 
-      # Zip "no install" versions for each arch
-      - name: Zip nvm-noinstall (386)
+      # Zip "no install" versions 
+      - name: Zip nvm-noinstall
         run: |
           $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
-          Compress-Archive -Path LICENSE,${{ env.GOBINS }}\nvm.exe,${{ env.GOBIN }}\* -DestinationPath "$distFolder\nvm-noinstall.zip"
-        shell: pwsh
-
-      - name: Zip nvm-noinstall (amd64)
-        run: |
-          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
-          Compress-Archive -Path LICENSE,${{ env.GOBINS }}\x64\nvm.exe,${{ env.GOBIN }}\* -DestinationPath "$distFolder\nvm-noinstall-x64.zip"
-        shell: pwsh
-
-      - name: Zip nvm-noinstall (arm64)
-        run: |
-          $distFolder = "${{ env.DIST }}\${{ env.AppVersion }}"
-          Compress-Archive -Path LICENSE,${{ env.GOBINS }}\arm64\nvm.exe,${{ env.GOBIN }}\* -DestinationPath "$distFolder\nvm-noinstall-arm64.zip"
+          Compress-Archive -Path LICENSE,${{ env.GOBIN }}\* -DestinationPath "$distFolder\nvm-noinstall.zip"
         shell: pwsh
 
       # Create installer using InnoSetup from buildtools
@@ -118,10 +99,6 @@ jobs:
         with:
           files: |
             dist/${{ env.AppVersion }}/nvm-noinstall.zip
-            dist/${{ env.AppVersion }}/nvm-noinstall-x64.zip
-            dist/${{ env.AppVersion }}/nvm-noinstall-arm64.zip
             dist/${{ env.AppVersion }}/nvm-setup.zip
             dist/${{ env.AppVersion }}/nvm-noinstall.zip.checksum.txt
-            dist/${{ env.AppVersion }}/nvm-noinstall-x64.zip.checksum.txt
-            dist/${{ env.AppVersion }}/nvm-noinstall-arm64.zip.checksum.txt
             dist/${{ env.AppVersion }}/nvm-setup.zip.checksum.txt
