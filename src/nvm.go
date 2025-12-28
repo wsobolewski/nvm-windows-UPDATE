@@ -1507,14 +1507,14 @@ func updateRootDir(path string) {
 	}
 }
 
-func elevatedRun(name string, arg ...string) (bool, error) {
-	ok, err := run("cmd", nil, append([]string{"/C", name}, arg...)...)
-	if err != nil {
-		ok, err = run("elevate.cmd", &env.root, append([]string{"cmd", "/C", name}, arg...)...)
-	}
+// func elevatedRun(name string, arg ...string) (bool, error) {
+// 	ok, err := run("cmd", nil, append([]string{"/C", name}, arg...)...)
+// 	if err != nil {
+// 		ok, err = run("elevate.cmd", &env.root, append([]string{"cmd", "/C", name}, arg...)...)
+// 	}
 
-	return ok, err
-}
+// 	return ok, err
+// }
 
 func run(name string, dir *string, arg ...string) (bool, error) {
 	c := exec.Command(name, arg...)
@@ -1531,49 +1531,49 @@ func run(name string, dir *string, arg ...string) (bool, error) {
 	return true, nil
 }
 
-func runElevated(command string, forceUAC ...bool) (bool, error) {
-	uac := true //false
-	if len(forceUAC) > 0 {
-		uac = forceUAC[0]
-	}
+// func runElevated(command string, forceUAC ...bool) (bool, error) {
+// 	uac := true //false
+// 	if len(forceUAC) > 0 {
+// 		uac = forceUAC[0]
+// 	}
 
-	if uac {
-		// Alternative elevation option at stackoverflow.com/questions/31558066/how-to-ask-for-administer-privileges-on-windows-with-go
-		cmd := exec.Command(filepath.Join(env.root, "elevate.cmd"), command)
+// 	if uac {
+// 		// Alternative elevation option at stackoverflow.com/questions/31558066/how-to-ask-for-administer-privileges-on-windows-with-go
+// 		cmd := exec.Command(filepath.Join(env.root, "elevate.cmd"), command)
 
-		var output bytes.Buffer
-		var _stderr bytes.Buffer
-		cmd.Stdout = &output
-		cmd.Stderr = &_stderr
-		perr := cmd.Run()
-		if perr != nil {
-			return false, errors.New(fmt.Sprint(perr) + ": " + _stderr.String())
-		}
-	}
+// 		var output bytes.Buffer
+// 		var _stderr bytes.Buffer
+// 		cmd.Stdout = &output
+// 		cmd.Stderr = &_stderr
+// 		perr := cmd.Run()
+// 		if perr != nil {
+// 			return false, errors.New(fmt.Sprint(perr) + ": " + _stderr.String())
+// 		}
+// 	}
 
-	c := exec.Command("cmd") // dummy executable that actually needs to exist but we'll overwrite using .SysProcAttr
+// 	c := exec.Command("cmd") // dummy executable that actually needs to exist but we'll overwrite using .SysProcAttr
 
-	// Based on the official docs, syscall.SysProcAttr.CmdLine doesn't exist.
-	// But it does and is vital:
-	// https://github.com/golang/go/issues/15566#issuecomment-333274825
-	// https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
-	c.SysProcAttr = &syscall.SysProcAttr{CmdLine: command}
+// 	// Based on the official docs, syscall.SysProcAttr.CmdLine doesn't exist.
+// 	// But it does and is vital:
+// 	// https://github.com/golang/go/issues/15566#issuecomment-333274825
+// 	// https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
+// 	c.SysProcAttr = &syscall.SysProcAttr{CmdLine: command}
 
-	var stderr bytes.Buffer
-	c.Stderr = &stderr
+// 	var stderr bytes.Buffer
+// 	c.Stderr = &stderr
 
-	err := c.Run()
-	if err != nil {
-		msg := stderr.String()
-		if strings.Contains(msg, "not have sufficient privilege") && uac {
-			return runElevated(command, false)
-		}
-		// fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return false, errors.New(fmt.Sprint(err) + ": " + msg)
-	}
+// 	err := c.Run()
+// 	if err != nil {
+// 		msg := stderr.String()
+// 		if strings.Contains(msg, "not have sufficient privilege") && uac {
+// 			return runElevated(command, false)
+// 		}
+// 		// fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+// 		return false, errors.New(fmt.Sprint(err) + ": " + msg)
+// 	}
 
-	return true, nil
-}
+// 	return true, nil
+// }
 
 func saveSettings() {
 	content := "root: " + strings.Trim(encode(env.root), " \n\r") + "\r\narch: " + strings.Trim(encode(env.arch), " \n\r") + "\r\nproxy: " + strings.Trim(encode(env.proxy), " \n\r") + "\r\noriginalpath: " + strings.Trim(encode(env.originalpath), " \n\r") + "\r\noriginalversion: " + strings.Trim(encode(env.originalversion), " \n\r")
