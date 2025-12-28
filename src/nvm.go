@@ -12,6 +12,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -301,17 +302,21 @@ func update() {
 }
 */
 
+// nvmrc reads a .nvmrc file in the current directory
+// and returns the Node.js version that should be used.
 func nvmrc() string {
+	// 1️⃣ Read the file – if it doesn't exist we simply return an error
 	data, err := os.ReadFile(".nvmrc")
 	if err != nil {
 		fmt.Println("Error reading .nvmrc file.")
 		return ""
 	}
 
+	// 2️⃣ Split into lines and strip comments/whitespace
 	rawLines := strings.Split(string(data), "\n")
 	var cleaned []string
 	for _, l := range rawLines {
-		if idx := strings.Index(l, "#"); idx != -1 { 
+		if idx := strings.Index(l, "#"); idx != -1 { // comment delimiter
 			l = l[:idx]
 		}
 		l = strings.TrimSpace(l)
@@ -326,63 +331,89 @@ func nvmrc() string {
 		return ""
 	}
 
-	var unpaired string          
-	keys := make(map[string]bool) 
+	// 3️⃣ Parse the lines – keep track of each type
+	var unpaired string 
+	var npmKey string  
+	var nodeKey string  
 
 	for _, line := range cleaned {
-		if strings.Contains(line, "=") { 
+		if strings.Contains(line, "=") { // key/value pair
 			parts := strings.SplitN(line, "=", 2)
 			key := strings.TrimSpace(parts[0])
 			value := strings.TrimSpace(parts[1])
 
-			// Reserved key check
-			if key == "node" {
-				nvmrcInvalidMsg(cleaned)
+			switch strings.ToLower(key) {
+			case "node":
+				nodeKey = value
+			case "npm":
+				npmKey = value
+			default:
+				fmt.Printf("Invalid key '%s' in .nvmrc. Only 'node' or 'npm' are allowed.\n", key)
 				return ""
 			}
-			// Duplicate key check
-			if keys[key] {
-				nvmrcInvalidMsg(cleaned)
+		} else { // bare line
+			if unpaired != "" {
+				fmt.Println(".nvmrc contains multiple versions.")
 				return ""
 			}
-			keys[key] = true
+			l := strings.TrimSpace(line)
 
-			_ = value 
-		} else { 
-			if unpaired != "" { 
-				nvmrcInvalidMsg(cleaned)
-				return ""
+			// Strip a leading 'v' if present (e.g. v5.9)
+			if len(l) > 0 && (l[0] == 'v' || l[0] == 'V') {
+				l = l[1:]
 			}
-			if(strings.Contains(line, "/")){
-				part := strings.Split(line, "/")[1]
-				unpaired = part
-			}else{
-				unpaired = line
-			}
-			
+			unpaired = l
 		}
 	}
 
-	if unpaired == "" { // no bare version found
-		nvmrcInvalidMsg(cleaned)
+	// 4️⃣ Resolve the final version to return
+	var version string
+
+	switch {
+	case nodeKey != "":
+		version = nodeKey
+
+	case npmKey != "":
+		_, _, _, _, _, npmMap := node.GetAvailable()
+		var candidates []string
+		for nv, npv := range npmMap {
+			if strings.HasPrefix(npv, npmKey) {
+				candidates = append(candidates, nv)
+			}
+		}
+		if len(candidates) == 0 {
+			fmt.Printf("npm version %s not found in available mapping.\n", npmKey)
+			return ""
+		}
+		// Pick the highest (latest) Node.js version among the candidates.
+		sort.Slice(candidates, func(i, j int) bool {
+			vi, _ := semver.Make(candidates[i])
+			vj, _ := semver.Make(candidates[j])
+			return vi.GT(vj) 
+		})
+		version = candidates[0]
+
+	case unpaired != "":
+		version = unpaired
+
+	default:
+		fmt.Println("No valid version found in .nvmrc.")
 		return ""
 	}
 
-	fmt.Println("\nFound .nvmrc file with version:", unpaired)
-	return unpaired
-}
+	if strings.Contains(version, "/"){
+		parts := strings.Split(version, "/")
+		if len(parts)>1{
+			if parts[1]=="*"{
+				version=parts[0]
+			}else {
+				version=parts[1]
+			}
+		}
+	}
 
-// nvmrcInvalidMsg prints a detailed error message explaining why the .nvmrc file is invalid.
-func nvmrcInvalidMsg(lines []string) {
-	errorText := `invalid .nvmrc!
-all non-commented content (anything after # is a comment) must be either:
-  - a single bare nvm-recognized version-ish
-  - or, multiple distinct key-value pairs, each key/value separated by a single equals sign (=)
-
-additionally, a single bare nvm-recognized version-ish must be present (after stripping comments).`
-	warnText := fmt.Sprintf("non-commented content parsed:\n%s", strings.Join(lines, "\n"))
-	fmt.Println(errorText)
-	fmt.Println(warnText)
+	fmt.Printf("\nFound .nvmrc file with version: %s\n", version)
+	return version
 }
 
 func getVersion(version string, cpuarch string, localInstallsOnly ...bool) (string, string, error) {
@@ -1443,13 +1474,13 @@ func getLatest() string {
 }
 
 func getLTS() string {
-	all, ltsList, current, stable, unstable, npm := node.GetAvailable()
-	fmt.Println(all)
-	fmt.Println(ltsList)
-	fmt.Println(current)
-	fmt.Println(stable)
-	fmt.Println(unstable)
-	fmt.Println(npm)
+	_, ltsList, _, _, _, _ := node.GetAvailable()
+	//fmt.Println(all)
+	//fmt.Println(ltsList)
+	//fmt.Println(current)
+	//fmt.Println(stable)
+	//fmt.Println(unstable)
+	//fmt.Println(npm)
 	// _, ltsList, _, _, _, _ := node.GetAvailable()
 	// ltsList has already been numerically sorted
 	return ltsList[0]
