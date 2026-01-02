@@ -1,16 +1,17 @@
 # nvm-windows-UPDATE
 
-A Node.js version management utility for Windows, forked from [coreybutler/nvm-windows](https://github.com/coreybutler/nvm-windows) and enhanced with additional features and fixes.
+A Node.js version management utility for Windows — a fork of [coreybutler/nvm-windows](https://github.com/coreybutler/nvm-windows) based on upstream v1.1.12, with additional fixes and enhancements.
 
-## Notable Features
+## Notable features
 
 - Manage multiple Node.js versions on Windows
-- Install, switch, and remove Node.js versions via command line
-- User mode support (run nvm commands as a regular user)
-- Supports `.nvmrc` files (with improved whitespace handling)
-- Handles spaces in file paths
-- ARM64 architecture and improved version check logic
-- Command aliases: `i` (install), `rm` (remove)
+- Install, switch, and remove Node.js versions from the command line
+- User-mode support (run nvm commands as a regular user)
+- Supports `.nvmrc` files (compatible with nvm-sh; trims whitespace)
+- Handles spaces in installation and nvm paths
+- ARM64 architecture support and improved version-check logic
+- Command aliases: `i` (install) and `rm` (remove)
+- Streamlined build / no-install packaging
 
 ### Usage
 
@@ -21,25 +22,27 @@ nvm remove <version>     # or: nvm rm <version>
 nvm list
 ```
 
-#### User Mode
-You can now run `nvm` commands as a regular (non-admin) user. This allows for easier and safer Node.js version management in restricted environments.
+#### User mode
+You can run `nvm` commands as a regular (non-admin) user. This makes Node.js version management easier and safer in restricted environments.
 
-#### .nvmrc Support
-If a `.nvmrc` file is present in your project, `nvm use` and other related commands will automatically detect and use the version specified within, even if extra spaces are present.
+#### .nvmrc support
+If a `.nvmrc` file is present in your project, `nvm use` and related commands will detect and use the version specified. The parser is more compatible with `nvm-sh` and trims leading/trailing whitespace.
 
-#### Spaces in Paths
-Installation and management now work even if your path (e.g., to `nvm` or Node.js) contains spaces.
+#### Spaces in paths
+Installation and management work even if your `nvm` or Node.js paths contain spaces.
 
-### Architecture Support
+### Architecture support
 
-- x86, x64, and ARM64
+- x86, x64, ARM64
 
-## What's New
+## What's new
 
-- User mode support for non-admin environments
-- Improved `.nvmrc` handling (trims whitespace)
-- Support for spaces in all file paths
+- User-mode support for non-admin environments
+- Improved `.nvmrc` handling (compatible with nvm-sh and trims whitespace)
+- Support for spaces in file paths
 - New command aliases: `i` and `rm`
+- ARM64 support and improved version checks
+- Updated build and packaging process
 
 ## License
 
@@ -47,4 +50,4 @@ Installation and management now work even if your path (e.g., to `nvm` or Node.j
 
 ---
 
-> This project is a fork of [coreybutler/nvm-windows](https://github.com/coreybutler/nvm-windows) with additional enhancements.
+> This project is a fork of [coreybutler/nvm-windows](https://github.com/coreybutler/nvm-windows) based on upstream v1.1.12, with additional enhancements.
