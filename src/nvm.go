@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	NvmVersion = "1.1.14"
+	NvmVersion = "1.1.15"
 )
 
 type Environment struct {
@@ -442,7 +442,7 @@ func getVersion(version string, cpuarch string, localInstallsOnly ...bool) (stri
 		fmt.Println(version)
 	}
 
-	if version == "lts" {
+	if strings.Contains(version, "lts") {
 		version = getLTS()
 	}
 

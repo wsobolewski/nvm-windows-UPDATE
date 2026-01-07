@@ -1,7 +1,7 @@
 #define MyAppName "NVM for Windows"
 #define MyAppShortName "nvm"
 #define MyAppLCShortName "nvm"
-#define MyAppVersion "1.1.14"
+#define MyAppVersion "1.1.15"
 #define MyAppPublisher "Ecor Ventures LLC"
 #define MyAppURL "https://github.com/wsobolewski/nvm-windows"
 #define MyAppExeName "nvm.exe"
